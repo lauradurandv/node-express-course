@@ -1,14 +1,36 @@
 //import module
 const express = require('express');
-const {products} = require('./data')
+const {products} = require('./data');
+//set up router
+const peopleRouter = require('./routes/people');
 
+
+//logger function logs all req info
+const logger = (req,res,next) => {
+    const method = req.method;
+    const url = req.url;
+    const time = new Date().getTime();
+    console.log(method,url,time)
+    //tells it move on the next thing
+    next()
+}
 
 //invoke
-const app = express()
+const app = express();
 
 //set up static and middleware
-//for files that dont need to change
-app.use(express.static('./public'))
+//for files that don't need to change
+//adding logger so it logs any call after ./public
+app.use(express.static('./methods-public'),logger)
+
+//NMiddleware: handles request body from a post request
+//parses url encoded data, specific format from html
+app.use(express.urlencoded({ extended: false}));
+//parses a json body
+app.use(express.json());
+
+
+app.use('/api/v1/people',peopleRouter);
 
 app.get('/api/v1/test',(req,res)=>{
     res.status(200).json({ message: "It worked"});
@@ -70,7 +92,6 @@ app.get('/api/v1/query', (req,res) => {
     }
     
 })
-
 
 
 //req for page not exist (handles all http verbs)
