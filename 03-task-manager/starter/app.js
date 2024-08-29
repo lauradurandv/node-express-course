@@ -1,20 +1,24 @@
 const express = require("express");
 const app = express();
-
-//set up middleware
 const tasks = require("./routes/task");
-app.use(express.json());
 const connectDB = require("./conectdb/connect");
 require("dotenv").config();
-//routes
-app.get("/hello", (req, res) => {
-  res.send("TASK MANAGER APP");
-});
+const notFound = require("./middleware/not-found");
+const errorHandler = require("./middleware/errorHandler");
 
+//Middleware
+app.use(express.static("./public"));
+app.use(express.json());
+
+//routes
 app.use("/api/v1/tasks", tasks);
+app.use(notFound);
+app.use(errorHandler);
 
 //set up server
-const port = 3000;
+//in terminal: PORT=XXXX node app.js
+//to set a specific port, which keeps port num private
+const port = process.env.PORT || 3000;
 
 //function: connect to database then start server
 const start = async () => {

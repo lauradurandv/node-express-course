@@ -9,3 +9,5 @@ node_modules/
 
 #IDE and editor settings
 .vscode/
+
+.DS_Store

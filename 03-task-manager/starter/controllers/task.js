@@ -1,36 +1,54 @@
-const Task = require('../models/task');
+const Task = require("../models/task");
+const asyncWrapper = require("../middleware/async");
+const { createCustomError } = require("../erros/custom-error");
 
-const getAllTasks = (req,res) => {
-    res.send('all items from the file')
-}
+const getAllTasks = asyncWrapper(async (req, res) => {
+  const tasks = await Task.find({});
+  res.status(200).json({ tasks });
+});
 
-const addTask = async (req,res) => {
-    try {
-        const task = await Task.create(req.body)
-        res.status(201).json({ task })
-    }catch(error){
-        res.status(400).json({
-            success: false,
-            message: "Invalid input"
-        })
-    }
-}
+const addTask = asyncWrapper(async (req, res) => {
+  const task = await Task.create(req.body);
+  res.status(201).json({ task });
+});
 
-const getTask = (req,res) => {
-    res.json({id:req.params.id})
-}
+const getTask = asyncWrapper(async (req, res, next) => {
+  const { id: taskID } = req.params;
+  const task = await Task.findOne({ _id: taskID });
+  if (!task) {
+    return next(createCustomError(`Task with ${taskID} does not exist.`, 404));
+  }
+  res.status(200).json({ task });
+});
 
-const deleteTask = (req,res) => {
-    res.json({id:req.params.id})
-}
+const deleteTask = asyncWrapper(async (req, res, next) => {
+  const { id: taskID } = req.params;
+  const task = await Task.findOneAndDelete({ _id: taskID });
+  if (!task) {
+    return next(createCustomError(`Task with ${taskID} does not exist.`, 404));
+  }
+  res.status(200).json({
+    success: true,
+    msg: "Task deleted successfully",
+  });
+});
 
-const updateTask = (req,res) => {
-    res.json({name:req.body.name})
-}
+const updateTask = asyncWrapper(async (req, res, next) => {
+  const { id: taskID } = req.params;
+  const task = await Task.findOneAndUpdate({ _id: taskID }, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  if (!task) {
+    return next(createCustomError(`Task with ${taskID} does not exist.`, 404));
+  }
+  res.status(200).json({ task });
+});
+
 module.exports = {
-    getAllTasks,
-    addTask,
-    getTask,
-    deleteTask,
-    updateTask
-}
+  getAllTasks,
+  addTask,
+  getTask,
+  deleteTask,
+  updateTask,
+};
