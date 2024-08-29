@@ -1,0 +1,11 @@
+#Node.js Modules
+node_modules/
+
+#logs
+*.log
+
+#.env
+.env
+
+#IDE and editor settings
+.vscode/
